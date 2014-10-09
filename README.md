@@ -1,7 +1,7 @@
-ICE3x node.js client
+ICE3X node.js client
 =================
 
-A client implementation of [Ice3x trading API] (https://github.com/ICE3X/api-doc) in node.js.
+A client implementation of [Ice3x trading and account management API] (https://github.com/ICE3X/api-doc) in node.js.
 
 
 Example Usage

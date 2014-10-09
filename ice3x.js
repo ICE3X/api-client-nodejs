@@ -18,16 +18,15 @@ Ice3x.prototype._request = function(method, path, data, callback, args) {
     }
   };
 
-  if(method === 'post') {
+  if (method === 'post') {
     options.headers['Content-Length'] = data.length;
-    options.headers['content-type'] = 'application/json';
-    options.headers['accept'] = 'application/json';
-    options.headers['accept-charset'] = 'utf-8';
-
-    options.headers['signature'] = args.signature;
-    options.headers['apikey'] = args.key;
-    options.headers['timestamp'] = args.timestamp;
   }
+  options.headers['content-type'] = 'application/json';
+  options.headers['accept'] = 'application/json';
+  options.headers['accept-charset'] = 'utf-8';
+  options.headers['signature'] = args.signature;
+  options.headers['apikey'] = args.key;
+  options.headers['timestamp'] = args.timestamp;
 
   var req = https.request(options, function(res) {
     res.setEncoding('utf8');
@@ -71,17 +70,35 @@ Ice3x.prototype._post = function(action, callback, args) {
   var timestamp = new Date().getTime();
   timestamp = timestamp.toString(); 
   var postData = JSON.stringify(args);
-  var message =  path + '\n' + timestamp + '\n' + postData;
+  var signature = this._signMessage(path + '\n' + timestamp + '\n' + postData);
 
-  var hmac = crypto.createHmac('sha512',new Buffer(this.secret, 'base64'));
-  hmac.update(message);
-  var signature = hmac.digest('base64');
-  
   args.key = this.key;
   args.signature = signature;
   args.timestamp = timestamp;
 
   this._request('post', path, postData, callback, args);
+}
+
+Ice3x.prototype._get = function(action, callback, args) {
+
+  var path = action;
+  var timestamp = new Date().getTime();
+  timestamp = timestamp.toString(); 
+  var signature =  this._signMessage(path + '\n' + timestamp + '\n');
+  
+  args.key = this.key;
+  args.signature = signature;
+  args.timestamp = timestamp;
+
+  this._request('get', path, undefined, callback, args)
+}
+
+
+Ice3x.prototype._signMessage = function (message) {
+  var hmac = crypto.createHmac('sha512',new Buffer(this.secret, 'base64'));
+  hmac.update(message);
+  var signature = hmac.digest('base64');
+  return signature;
 }
 
 Ice3x.prototype.create_order = function(currency, instrument, price, volume, side, type, clientRequestId, callback) {
@@ -107,6 +124,10 @@ Ice3x.prototype.order_history = function(currency, instrument, limit, since, cal
 
 Ice3x.prototype.trade_history = function(currency, instrument, limit, since, callback) {
   this._post('/order/trade/history', callback, {currency:currency, instrument:instrument, limit:limit, since:since});
+}
+
+Ice3x.prototype.account_balance = function(callback) {
+  this._get('/account/balance', callback, {});
 }
 
 module.exports = Ice3x;

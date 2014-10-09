@@ -19,6 +19,8 @@ var ice3x = new Ice3x(key, privatekey);
 
 //ice3x.trade_history('ZAR', 'BTC', 10, 119834, handleResponse);
 
+//ice3x.account_balance(handleResponse);
+
 function handleResponse(error, data) {
    if (error) {
       console.log(error);
